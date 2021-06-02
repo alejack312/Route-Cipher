@@ -1,0 +1,477 @@
+package mod;
+
+import cont.JOP;
+
+import java.util.ArrayList;
+
+public class RouteCipher
+{
+    private String _message;
+    private ArrayList<String> _a;
+    private ArrayList<String> _a2;
+
+    private String[][] _letterBlock;
+    private int _numRows;
+    private int _numCols;
+
+    private String _aCip;
+    private int _c;
+
+    private String _sCip;
+    private String _t;
+
+    private String _cCip;
+    private int _s;
+
+    private String _xCip;
+    private char _k;
+
+    private boolean _b;
+
+    public RouteCipher(String m)
+    {
+        if(m.equalsIgnoreCase("Exit"))
+        {
+            System.exit(0);
+        }
+        else
+        {
+            _message = m;
+        }
+        _a = new ArrayList<String>();
+        _a2 = new ArrayList<String>();
+        _numRows = (int) (Math.sqrt(Math.sqrt(100)) + 1);
+        _numCols = (int) (Math.sqrt(Math.sqrt(100)) + 1);
+        _letterBlock = new String[_numRows][_numCols];
+        _b = true;
+    }
+
+    public int getNumRows()
+    {
+        return _numRows;
+    }
+
+    public int getNumCols()
+    {
+        return _numCols;
+    }
+
+    public void MessageDisplay()
+    {
+        fillBlock(_message);
+        JOP.msg("Array: \n" + toString() + "\n" + displayDimensions());
+        _a.add(_message + "\n" + "Array: \n" + toString() + "\n" + displayDimensions() + "\n\n");
+
+        while(_b)
+        {
+            String c = JOP.in("Please input a command: ");
+
+            if(c.equalsIgnoreCase("Route"))
+            {
+                apCipher(_message);
+                JOP.msg(_aCip + "\nArray: \n" + toString(_aCip) + "\n" + displayDimensions() + "\nNumber of letter blocks used: " + _c);
+                _a2.add(_aCip + "\nArray: \n" + toString(_aCip) +  displayDimensions() + "\n\n");
+            }
+            else if(c.equalsIgnoreCase("Route Decrypt"))
+            {
+                apDecrypt(_aCip);
+                JOP.msg(_message);
+            }
+            else if(c.equalsIgnoreCase("Substitution"))
+            {
+                String n = JOP.in("If you would like to use a preset substitution key, enter \"1 - 3\".\nIf you would like to create your own substitution key, enter \"0\".\n\n0. Create your own\n1. bgroflzaeqjdhvmcpunsktwyix\n2. kdgfnslvbwahexjmqcpzrtyiuo\n3. zklcjgpxmnivudyarowtbhsefq");
+                sCipher(_message, n);
+                JOP.msg(msgEncrypt(_sCip) + "\nArray: \n" + toString(_sCip) + displayDimensions() + "\nNumber of letter blocks used: " + _c);
+                _a2.add(_sCip + "\nArray: \n" + toString(_sCip) + displayDimensions() + "\n\n");
+
+            }
+            else if(c.equalsIgnoreCase("Substitution Decrypt"))
+            {
+                JOP.msg(sDecipher());
+            }
+            else if(c.equalsIgnoreCase("Caesar"))
+            {
+                cCipher(Integer.parseInt(JOP.in("Please input a shift value: ")));
+                //JOP.msg(_cCip);
+                JOP.msg(msgEncrypt(_cCip) + "\nArray: \n" + toString(_cCip) + "\n" + displayDimensions() + "\nNumber of letter blocks used: " + _c);
+                _a2.add(_cCip + "\nArray: \n" + toString(_cCip) + displayDimensions() +"\n\n");
+            }
+            else if(c.equalsIgnoreCase("Caesar Decrypt"))
+            {
+                JOP.msg(cDecrypt(_cCip, _s));
+            }
+            else if(c.equalsIgnoreCase("XOR"))
+            {
+                xCipher(_message, JOP.in("Please input a letter: ").charAt(0));
+                JOP.msg(msgEncrypt(_xCip) + "\nArray: \n" + toString(_xCip) + "\n" + displayDimensions() + "\nNumber of letter blocks used: " + _c);
+                _a2.add(_xCip + "\nArray: \n" + toString(_xCip) + displayDimensions() + "\n\n");
+            }
+            else if(c.equalsIgnoreCase("XOR Decrypt"))
+            {
+                xDecrypt();
+                JOP.msg(_xCip);
+            }
+            else if(c.equalsIgnoreCase("New"))
+            {
+                _message = JOP.in("Please input a new message: ");
+                fillBlock(_message);
+                JOP.msg("Array: \n" + toString() + "\n" + displayDimensions());
+                _a.add(_message + "\n" + "Array: \n" + toString() + "\n" + displayDimensions() + "\n\n");
+            }
+            else if(c.equalsIgnoreCase("Log I"))
+            {
+                String output = "";
+                for(String s : _a)
+                {
+                    output += s;
+                }
+                JOP.msg(output);
+            }
+            else if(c.equalsIgnoreCase("Log II"))
+            {
+                String output = "";
+                for(String s : _a2)
+                {
+                    output += s;
+                }
+                JOP.msg(output);
+            }
+            else if(c.equalsIgnoreCase("Help"))
+            {
+                Help _h = new Help();
+                _h.instructions();
+            }
+            else if(c.equalsIgnoreCase("Exit"))
+            {
+                _b = false;
+                System.exit(0);
+            }
+            else
+            {
+                JOP.msg("Try Again");
+            }
+        }
+    }
+
+    private void fillBlock(String str)
+    {
+        for (int r = 0; r < this._numRows; r++ )
+        {
+            for (int c = 0; c < this._numCols; c++ )
+            {
+                if (str.length() > (c + (r * this._numCols)))
+                {
+                    this._letterBlock[r][c] = str.substring(c + r * this._numCols, 1 + c + r * this._numCols);
+                }
+                else
+                {
+                    this._letterBlock[r][c] = "A";
+                }
+            }
+        }
+    }
+
+    /** Extracts encrypted string from letterBlock in column-major order.
+     * Precondition: letterBlock has been filled
+     * @return the encrypted string from letterBlock
+     */
+    private String encryptBlock()
+    {
+        String output = "";
+        if (_letterBlock.length > 0)
+        {
+            for (int c = 0; c < _letterBlock[0].length; c++)
+            {
+                for (int r = 0; r < _letterBlock.length; r++)
+                {
+                    output += _letterBlock[r][c];
+                }
+            }
+        }
+        return output;
+    }
+
+    private String decryptBlock()
+    {
+        String output = "";
+        if (_letterBlock.length > 0)
+        {
+            for (int c = _letterBlock[0].length - 1; c >= 0; c--)
+            {
+                for (int r = _letterBlock.length - 1; r >= 0; r--)
+                {
+                    output += _letterBlock[r][c];
+                }
+            }
+        }
+        int j = output.length();
+        for (int i = output.length() - 1; i >= 0; i--)
+        {
+            output += output.substring(i, i + 1);
+        }
+        String temp = output.substring(j);
+        output = temp;
+        return output;
+    }
+
+    public String msgEncrypt(String message)
+    {
+        String msg = "";
+        int ind = 0;
+        int cnt = 0;
+        while(ind < message.length())
+        {
+            fillBlock(message.substring(ind));
+            cnt++;
+            msg += encryptBlock();
+            ind += _numRows * _numCols;
+        }
+        _c = cnt;
+        return msg;
+    }
+
+    public String msgDecrypt(String message)
+    {
+        String msg = "";
+        int ind = 0;
+        while(ind < message.length())
+        {
+            fillBlock(message.substring(ind));
+            msg += decryptBlock();
+            ind += _numRows * _numCols;
+        }
+        return msg;
+    }
+
+    public void apCipher(String message)
+    {
+        String msg = "";
+        int ind = 0;
+        int cnt = 0;
+        while(ind < message.length())
+        {
+            fillBlock(message.substring(ind));
+            cnt++;
+            msg += encryptBlock();
+            ind += _numRows * _numCols;
+        }
+        _aCip = msg;
+        _c = cnt;
+    }
+
+    public void apDecrypt(String message)
+    {
+        String msg = "";
+        int ind = 0;
+        while(ind < message.length())
+        {
+            fillBlock(message.substring(ind));
+            msg += decryptBlock();
+            ind += _numRows * _numCols;
+        }
+        _message = msg;
+    }
+
+    public void sCipher(String message, String n)
+    {
+        ArrayList<String> lArr = new ArrayList<String>();
+        ArrayList<String> uArr = new ArrayList<String>();
+        if(n.equalsIgnoreCase("0"))
+        {
+            String temp = JOP.in("Please create a key of 26 letters in a random order (no repeats): ");
+            for(int i = 0; i < temp.length(); i++)
+            {
+                lArr.add(temp.substring(i, i + 1));
+                uArr.add((Character.toString(Character.toUpperCase(temp.substring(i, i + 1).charAt(0)))));
+            }
+        }
+        else if(n.equalsIgnoreCase("1"))
+        {
+            String temp = "bgroflzaeqjdhvmcpunsktwyix";
+            for (int i = 0; i < temp.length(); i++)
+            {
+                lArr.add(temp.substring(i, i + 1));
+                uArr.add((Character.toString(Character.toUpperCase(temp.substring(i, i + 1).charAt(0)))));
+            }
+        }
+        else if(n.equalsIgnoreCase("2"))
+        {
+            String temp = "kdgfnslvbwahexjmqcpzrtyiuo";
+            for (int i = 0; i < temp.length(); i++)
+            {
+                lArr.add(temp.substring(i, i + 1));
+                uArr.add((Character.toString(Character.toUpperCase(temp.substring(i, i + 1).charAt(0)))));
+            }
+        }
+        else if(n.equalsIgnoreCase("3"))
+        {
+            String temp = "zklcjgpxmnivudyarowtbhsefq";
+            for (int i = 0; i < temp.length(); i++)
+            {
+                lArr.add(temp.substring(i, i + 1));
+                uArr.add((Character.toString(Character.toUpperCase(temp.substring(i, i + 1).charAt(0)))));
+            }
+        }
+        String output = "";
+        int ind = 0;
+        int pos = 0;
+        for (int r = 0; r < _letterBlock.length; r++)
+        {
+            for (int c = 0; c < _letterBlock[0].length; c++)
+            {
+                _t += _letterBlock[r][c];
+                if(Character.isUpperCase((_letterBlock[r][c].charAt(ind))) && pos < message.length())
+                {
+                    int x = _letterBlock[r][c].charAt(ind) - 'A';
+                    output += uArr.get(x);
+                }
+                else if(pos < message.length())
+                {
+                    int x = _letterBlock[r][c].charAt(ind) - 'a';
+                    output += lArr.get(x);
+                }
+                else
+                {
+                    output += _letterBlock[r][c];
+                }
+                pos++;
+            }
+        }
+        _sCip = output;
+    }
+
+    public String sDecipher()
+    {
+        return _t.substring(4);
+    }
+
+    public void cCipher(int s)
+    {
+        StringBuffer output = new StringBuffer();
+        int ind = 0;
+        int pos = 0;
+        for (int r = 0; r < _letterBlock.length; r++)
+        {
+            for (int c = 0; c < _letterBlock[0].length; c++)
+            {
+                if(Character.isUpperCase((_letterBlock[r][c].charAt(ind))) && pos < _message.length())
+                {
+                    char ch = (char) (((int) _letterBlock[r][c].charAt(ind) + s - 65) % 26 + 65);
+                    output.append(ch);
+                }
+                else if(pos < _message.length())
+                {
+                    char ch = (char) (((int) _letterBlock[r][c].charAt(ind) + s - 97) % 26 + 97);
+                    output.append(ch);
+                }
+                else
+                {
+                    char ch = (char) (((int) _letterBlock[r][c].charAt(ind)));
+                    output.append(ch);
+                }
+                pos++;
+            }
+        }
+        _cCip = output.toString();
+        _s = s;
+    }
+
+    public String cDecrypt(String cipher, int s)
+    {
+        StringBuffer output = new StringBuffer();
+        int pos = 0;
+        for(int i = 0; i < cipher.length(); i++)
+        {
+            if (Character.isUpperCase(cipher.charAt(i)) && pos < _message.length())
+            {
+                char ch = (char) (((int) cipher.charAt(i) - s - 65) % 26 + 65);
+                output.append(ch);
+            }
+            else if(pos < _message.length())
+            {
+                char ch = (char) (((int) cipher.charAt(i) - s - 97) % 26 + 97);
+                output.append(ch);
+            }
+            else
+            {
+                char ch = (char) (((int) cipher.charAt(i)));
+                output.append(ch);
+            }
+            pos++;
+        }
+        return output.toString();
+    }
+
+
+
+    public void xCipher(String m, char x)
+    {
+        char xorKey = x;
+        String output = "";
+        int ind = 0;
+        int pos = 0;
+        for (int r = 0; r < _letterBlock.length; r++)
+        {
+            for (int c = 0; c < _letterBlock[0].length; c++)
+            {
+                if(pos < _message.length())
+                {
+                    output += Character.toString((char)(_letterBlock[r][c].charAt(ind)^xorKey));
+                }
+                else
+                {
+                    output += _letterBlock[r][c];
+                }
+                pos++;
+            }
+        }
+        _xCip = output;
+        _k = xorKey;
+    }
+
+    public void xDecrypt()
+    {
+
+        fillBlock(_xCip);
+        xCipher(_xCip, _k);
+    }
+
+    public String toString()
+    {
+        String output = "";
+        String space = "     ";
+        for (int r = 0; r < _letterBlock.length; r++)
+        {
+            for (int c = 0; c < _letterBlock[0].length; c++)
+            {
+                output += _letterBlock[r][c];
+                output += space;
+            }
+            output += "\n";
+        }
+        return output;
+    }
+
+    public String toString(String str)
+    {
+        fillBlock(str);
+        String output = "";
+        String space = "     ";
+        for (int r = 0; r < _letterBlock.length; r++)
+        {
+            for (int c = 0; c < _letterBlock[0].length; c++)
+            {
+                output += _letterBlock[r][c];
+                output += space;
+            }
+            output += "\n";
+        }
+        return output;
+    }
+
+    public String displayDimensions()
+    {
+        String output = "Rows: " + getNumRows() + "; " + "Columns: " + getNumCols();
+        return output;
+    }
+}

@@ -1,0 +1,60 @@
+package mod;
+
+import cont.JOP;
+
+public class Help
+{
+    public void intro()
+    {
+        JOP.msg("                    ____________\n" +
+                "                  / ============\\\n" +
+                "                 / _____________\\\n" +
+                "                | ______________|\n" +
+                "                | |                              | |\n" +
+                "                | |                              | |\n" +
+                "                | |_____________| |_____________\n" +
+                "                \\_______________/                            )\n" +
+                "                / \" \" \" \" \" \" \" \" \" \" \" \\                           /\n" +
+                "               /  :  :  :  :  :  :  :  :  :  :  :  : \\                 =D-'\n" +
+                "              (_________________)\n" +
+                "" +
+
+                "      Welcome to The Cipher Console\n" +
+                "There are four different types of ciphers\n" +
+                "    that you may use on this console.\n" +
+                "1. Route Cipher\n" +
+                "   A type transposition cipher and the most basic\n" +
+                "   cipher on this console.\n" +
+                "2. Substitution Cipher + Route Cipher\n" +
+                "   A substitution Cipher whose output is then put\n" +
+                "   into a Route Cipher algorithm.\n" +
+                "3. Caesar Cipher + Route Cipher\n" +
+                "   An iconic shift cipher whose output is then put\n" +
+                "   into a Route Cipher algorithm.\n" +
+                "4. XOR Cipher + Route Cipher\n" +
+                "   A difficult XOR Cipher whose output is then put\n" +
+                "   into a Route Cipher Algorithm.");
+    }
+
+    public void instructions()
+    {
+        JOP.msg("Guide:\n" +
+                "1. Please input \"Route\" to use the Route Cipher.\n" +
+                "2. Please input \"Route Decrypt\" to decrypt the Route Cipher.\n" +
+                "3. Please input \"Substitution\" to use the Substitution Cipher.\n" +
+                "4. Please input \"Substitution Decrypt\" to decrypt the Substitution Cipher.\n" +
+                "5. Please input \"Caesar\" to use the Caesar Cipher.\n" +
+                "6. Please input \"Caesar Decrypt\" to decrypt the Caesar Cipher.\n" +
+                "7. Please input \"XOR\" to use the XOR Cipher (some ASCII characters will not appear).\n" +
+                "8. Please input \"XOR Decrypt\" to decrypt the XOR Cipher.\n" +
+                "9. Please input \"New\" to input a new message.\n" +
+                "10. Please input \"Log I\" to see the log of original messages.\n" +
+                "11. Please input \"Log II\" to see the log of encrypted messages.\n" +
+                "12. Please input \"Help\" to see these instructions again.\n" +
+                "13. Please input \"Exit\" if you would like to exit the program.\n\n" +
+                "*If you would like to encrypt and decrypt a message (even if it is the same one),\n" +
+                "create a new one. Messages will become jumbled if subject to subsequent encryption\n" +
+                "algorithms." +
+                "");
+    }
+}

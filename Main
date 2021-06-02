@@ -1,0 +1,15 @@
+package mod;
+
+import cont.JOP;
+
+public class Main
+{
+    public static void main(String[] args)
+    {
+        Help _h = new Help();
+        _h.intro();
+        _h.instructions();
+        RouteCipher _r = new RouteCipher(JOP.in("Please input a message: "));
+        _r.MessageDisplay();
+    }
+}
